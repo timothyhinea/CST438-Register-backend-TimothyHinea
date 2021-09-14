@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cst438.domain.CourseDTOG;
+import com.cst438.domain.StudentDTO;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
 
@@ -22,7 +22,7 @@ public class CourseController {
 	 */
 	@PutMapping("/course/{course_id}")
 	@Transactional
-	public void updateCourseGrades( @RequestBody CourseDTOG courseDTO, @PathVariable("course_id") int course_id) {
+	public void updateCourseGrades( @RequestBody StudentDTO courseDTO, @PathVariable("course_id") int course_id) {
 		
 		//TODO  complete this method in homework 4
 		

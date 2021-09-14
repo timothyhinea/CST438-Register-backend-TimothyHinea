@@ -24,6 +24,7 @@ import com.cst438.domain.ScheduleDTO;
 import com.cst438.domain.Student;
 import com.cst438.domain.StudentRepository;
 import com.cst438.service.GradebookService;
+import com.cst438.domain.StudentDTO;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -44,99 +45,60 @@ public class StudentController {
 	
 	
 	/*
-	 * get current schedule for student.
+	 * get student by email schedule for student.
 	 */
-
+	@GetMapping("/student")
+	public StudentDTO getStudent( @RequestParam("email") String email){
+		System.out.print(email);
+		
+		Student student = studentRepository.findByEmail(email);
+		System.out.print(student);
+		if (student != null) {
+			StudentDTO sched = createStudentDTO(student);
+			return sched;
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student not found. " );
+		}
+	}
 
 	
-	@PostMapping("/schedule")
+	@PostMapping("/student")
 	@Transactional
-	public ScheduleDTO.CourseDTO addCourse( @RequestBody ScheduleDTO.CourseDTO courseDTO  ) { 
+	public StudentDTO addStudent( @RequestBody StudentDTO studentDTO  ) { 
+		boolean flag = false;
+		Iterable<Student> existingStudents = studentRepository.findAll();
+		for(Student s: existingStudents) 
+			if(s.getEmail().equals(studentDTO.email))
+				flag = true;
 		
-		String student_email = "test@csumb.edu";   // student's email 
-		
-		Student student = studentRepository.findByEmail(student_email);
-		Course course  = courseRepository.findByCourse_id(courseDTO.course_id);
-		
-		// student.status
-		// = 0  ok to register
-		// != 0 hold on registration.  student.status may have reason for hold.
-		
-		if (student!= null && course!=null && student.getStatusCode()==0) {
-			// TODO check that today's date is not past add deadline for the course.
-			Enrollment enrollment = new Enrollment();
-			enrollment.setStudent(student);
-			enrollment.setCourse(course);
-			enrollment.setYear(course.getYear());
-			enrollment.setSemester(course.getSemester());
-			Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
-			
-			gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
-			
-			ScheduleDTO.CourseDTO result = createCourseDTO(savedEnrollment);
-			return result;
+		if(!flag) {
+			Student result = new Student();
+			result.setName(studentDTO.name);
+			result.setEmail(studentDTO.email);
+			studentRepository.save(result);
+			return studentDTO;
 		} else {
-			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course_id invalid or student not allowed to register for the course.  "+courseDTO.course_id);
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST);
 		}
 		
 	}
 	
-	@DeleteMapping("/schedule/{enrollment_id}")
-	@Transactional
-	public void dropCourse(  @PathVariable int enrollment_id  ) {
-		
-		String student_email = "test@csumb.edu";   // student's email 
-		
-		// TODO  check that today's date is not past deadline to drop course.
-		
-		Enrollment enrollment = enrollmentRepository.findById(enrollment_id);
-		
-		// verify that student is enrolled in the course.
-		if (enrollment!=null && enrollment.getStudent().getEmail().equals(student_email)) {
-			// OK.  drop the course.
-			 enrollmentRepository.delete(enrollment);
-		} else {
-			// something is not right with the enrollment.  
-			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Enrollment_id invalid. "+enrollment_id);
-		}
-	}
 	
 	/* 
 	 * helper method to transform course, enrollment, student entities into 
 	 * a an instance of ScheduleDTO to return to front end.
 	 * This makes the front end less dependent on the details of the database.
 	 */
-	private ScheduleDTO createSchedule(int year, String semester, Student s, List<Enrollment> enrollments) {
-		ScheduleDTO result = new ScheduleDTO();
-		result.semester = semester;
-		result.year = year;
-		result.student_email = s.getEmail();
-		result.student_id = s.getStudent_id();
-		ArrayList<ScheduleDTO.CourseDTO> courses = new ArrayList<>();
-		
-		for (Enrollment e : enrollments) {
-			ScheduleDTO.CourseDTO courseDTO = createCourseDTO(e);
-			courses.add(courseDTO);
-		}
-		result.courses = courses;
-		return result;
-	}
 	
-	private ScheduleDTO.CourseDTO createCourseDTO(Enrollment e) {
-		ScheduleDTO.CourseDTO courseDTO = new ScheduleDTO.CourseDTO();
-		Course c = e.getCourse();
-		courseDTO.id =e.getEnrollment_id();
-		courseDTO.building = c.getBuilding();
-		courseDTO.course_id = c.getCourse_id();
-		courseDTO.endDate = c.getEnd().toString();
-		courseDTO.instructor = c.getInstructor();
-		courseDTO.room = c.getRoom();
-		courseDTO.section = c.getSection();
-		courseDTO.startDate = c.getStart().toString();
-		courseDTO.times = c.getTimes();
-		courseDTO.title = c.getTitle();
-		courseDTO.grade = e.getCourseGrade();
-		return courseDTO;
+	private StudentDTO createStudentDTO(Student s)
+	{
+		StudentDTO result = new StudentDTO();
+		result.student_id = s.getStudent_id();
+		result.email = s.getEmail();
+		result.status_code = s.getStatusCode();
+		result.status = s.getStatus();
+		result.name = s.getName();
+		return result;
 	}
 	
 }
