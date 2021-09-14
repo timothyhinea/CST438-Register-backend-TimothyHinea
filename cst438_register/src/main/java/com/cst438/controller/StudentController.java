@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -49,8 +50,6 @@ public class StudentController {
 	 */
 	@GetMapping("/student")
 	public StudentDTO getStudent( @RequestParam("email") String email){
-		System.out.print(email);
-		
 		Student student = studentRepository.findByEmail(email);
 		System.out.print(student);
 		if (student != null) {
@@ -78,6 +77,31 @@ public class StudentController {
 			studentRepository.save(result);
 			return studentDTO;
 		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST);
+		}
+		
+	}
+	
+	@SuppressWarnings("unused")
+	@PutMapping("/student/{email}")
+	@Transactional
+	public StudentDTO addAndRemoveHold(  @PathVariable String email, @RequestParam("status_code") int status_code  ) { 
+		System.out.println(email + status_code);
+		
+		Student student = studentRepository.findByEmail(email);
+		student.setStatusCode(status_code);
+		
+		StudentDTO sDTO = createStudentDTO(student);
+		
+		if(student != null) {
+			if(status_code != 0){
+				System.out.println((status_code!= 0));
+				return sDTO;
+			}else{
+				Student result = new Student();
+				return sDTO;
+			}	
+		}else {
 			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST);
 		}
 		
