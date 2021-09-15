@@ -51,8 +51,8 @@ public class StudentController {
 	@GetMapping("/student")
 	public StudentDTO getStudent( @RequestParam("email") String email){
 		Student student = studentRepository.findByEmail(email);
-		System.err.print(student);
-		if(student != null) {
+		System.out.print(student);
+		if (student != null) {
 			StudentDTO sched = createStudentDTO(student);
 			return sched;
 		} else {
@@ -71,8 +71,6 @@ public class StudentController {
 			result.setName(studentDTO.name);
 			result.setEmail(studentDTO.email);
 			studentRepository.save(result);
-			Student returnDTO = studentRepository.findByEmail(studentDTO.email);
-			studentDTO = createStudentDTO(returnDTO);
 			return studentDTO;
 		} else {
 			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST);
