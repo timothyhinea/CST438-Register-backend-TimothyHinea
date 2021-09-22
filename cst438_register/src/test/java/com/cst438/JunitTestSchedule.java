@@ -213,42 +213,6 @@ public class JunitTestSchedule {
 		verify(enrollmentRepository).delete(any(Enrollment.class));
 	}
 	
-	
-	@Test
-	public void addStudent()  throws Exception {
-		
-		MockHttpServletResponse response;
-		
-		Student student = new Student();
-		student.setEmail(TEST_STUDENT_EMAIL);
-		student.setName(TEST_STUDENT_NAME);
-		student.setStatusCode(0);
-		student.setStudent_id(1);
-		
-	
-		// given  -- stubs for database repositories that return test data
-		given(studentRepository.findById(1)).willReturn(student);
-		given(studentRepository.findByEmail(TEST_STUDENT_EMAIL)).willReturn(null);
-		given(studentRepository.save(any(Student.class))).willReturn(student);
-
-		
-	    StudentDTO studentDTO = new StudentDTO();
-	    studentDTO.name = TEST_STUDENT_NAME;
-	    studentDTO.email = TEST_STUDENT_EMAIL;
-
-	    
-	    response = mvc.perform(
-                MockMvcRequestBuilders
-                  .post("/student")
-                  .content(asJsonString(studentDTO))
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .accept(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-		
-		// verify that return status = OK (value 200) 
-		assertEquals(200, response.getStatus());
-	}
-	
 		
 	private static String asJsonString(final Object obj) {
 		try {
