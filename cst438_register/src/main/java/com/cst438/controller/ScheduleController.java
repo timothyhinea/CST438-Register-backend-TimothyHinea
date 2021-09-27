@@ -24,7 +24,6 @@ import com.cst438.domain.ScheduleDTO;
 import com.cst438.domain.Student;
 import com.cst438.domain.StudentRepository;
 import com.cst438.service.GradebookService;
-import com.cst438.service.GradebookServiceREST;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -67,7 +66,6 @@ public class ScheduleController {
 	@PostMapping("/schedule")
 	@Transactional
 	public ScheduleDTO.CourseDTO addCourse( @RequestBody ScheduleDTO.CourseDTO courseDTO  ) { 
-		GradebookServiceREST gradebookServiceREST = new GradebookServiceREST();
 		String student_email = "test@csumb.edu";   // student's email 
 		
 		Student student = studentRepository.findByEmail(student_email);
@@ -85,8 +83,7 @@ public class ScheduleController {
 			enrollment.setYear(course.getYear());
 			enrollment.setSemester(course.getSemester());
 			Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
-			gradebookServiceREST.enrollStudent(student_email, student.getName(), course.getCourse_id());
-			
+
 			gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
 			
 			ScheduleDTO.CourseDTO result = createCourseDTO(savedEnrollment);

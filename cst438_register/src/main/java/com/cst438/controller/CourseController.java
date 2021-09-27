@@ -34,10 +34,11 @@ public class CourseController {
 	@PutMapping("/course/{course_id}")
 	@Transactional
 	public void updateCourseGrades( @RequestBody CourseDTOG grades, @PathVariable("course_id") int course_id) {
+		System.err.println(course_id);
 		Course course = courseRepository.findByCourse_id(course_id);
 		for(CourseDTOG.GradeDTO grade : grades.grades) {
 			Student student = studentRepository.findByEmail(grade.student_email);
-			enrollmentRepository.upDateEnrollmentGrade(grade.grade, student, course );
+			enrollmentRepository.upDateEnrollmentGrade(grade.grade, student, course);
 		}
 	}
 
