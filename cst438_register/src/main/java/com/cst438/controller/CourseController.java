@@ -8,8 +8,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cst438.domain.StudentDTO;
+import com.cst438.domain.StudentRepository;
+import com.cst438.domain.Course;
+import com.cst438.domain.CourseDTOG;
+import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
+import com.cst438.domain.Student;
 
 @RestController
 public class CourseController {
@@ -17,15 +22,24 @@ public class CourseController {
 	@Autowired
 	EnrollmentRepository enrollmentRepository;
 	
+	@Autowired
+	StudentRepository studentRepository;
+	
+	@Autowired
+	CourseRepository courseRepository;
+	
 	/*
 	 * endpoint used by gradebook service to transfer final course grades
 	 */
 	@PutMapping("/course/{course_id}")
 	@Transactional
-	public void updateCourseGrades( @RequestBody StudentDTO courseDTO, @PathVariable("course_id") int course_id) {
-		
-		//TODO  complete this method in homework 4
-		
+	public void updateCourseGrades( @RequestBody CourseDTOG grades, @PathVariable("course_id") int course_id) {
+		Course course = courseRepository.findByCourse_id(course_id);
+		System.err.println(grades);
+		for(CourseDTOG.GradeDTO grade : grades.grades) {
+			Student student = studentRepository.findByEmail(grade.student_email);
+			enrollmentRepository.upDateEnrollmentGrade(grade.grade, student, course );
+		}
 	}
 
 }
