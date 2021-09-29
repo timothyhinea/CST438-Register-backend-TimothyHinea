@@ -66,7 +66,6 @@ public class ScheduleController {
 	@PostMapping("/schedule")
 	@Transactional
 	public ScheduleDTO.CourseDTO addCourse( @RequestBody ScheduleDTO.CourseDTO courseDTO  ) { 
-		
 		String student_email = "test@csumb.edu";   // student's email 
 		
 		Student student = studentRepository.findByEmail(student_email);
@@ -84,7 +83,7 @@ public class ScheduleController {
 			enrollment.setYear(course.getYear());
 			enrollment.setSemester(course.getSemester());
 			Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
-			
+
 			gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
 			
 			ScheduleDTO.CourseDTO result = createCourseDTO(savedEnrollment);

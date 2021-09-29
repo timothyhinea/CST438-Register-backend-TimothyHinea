@@ -116,6 +116,8 @@ public class JunitTestStudent {
 		
 		// verify that return status = OK (value 200) 
 		assertEquals(200, response.getStatus());
+		
+		verify(studentRepository, times(1)).findByEmail(TEST_STUDENT_EMAIL);
 	}
 	
 	@Test

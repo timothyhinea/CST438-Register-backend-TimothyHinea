@@ -65,12 +65,12 @@ public class StudentController {
 	@Transactional
 	public StudentDTO addStudent( @RequestBody StudentDTO studentDTO  ) { 
 		Student student = studentRepository.findByEmail(studentDTO.email);
-		
 		if(student == null) {
-			Student result = new Student();
-			result.setName(studentDTO.name);
-			result.setEmail(studentDTO.email);
-			studentRepository.save(result);
+			student = new Student();
+			student.setEmail(studentDTO.email);
+			student.setName(studentDTO.name);
+			Student student_with_key = studentRepository.save(student);
+			studentDTO.student_id = student_with_key.getStudent_id();
 			return studentDTO;
 		} else {
 			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST);
