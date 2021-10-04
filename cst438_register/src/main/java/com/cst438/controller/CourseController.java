@@ -2,6 +2,7 @@ package com.cst438.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import com.cst438.domain.EnrollmentRepository;
 import com.cst438.domain.Student;
 
 @RestController
+@CrossOrigin(origins = {"http://localhost:3000", "https://cst438register-fe-hinea.herokuapp.com/"})
 public class CourseController {
 	
 	@Autowired
@@ -34,7 +36,6 @@ public class CourseController {
 	@PutMapping("/course/{course_id}")
 	@Transactional
 	public void updateCourseGrades( @RequestBody CourseDTOG grades, @PathVariable("course_id") int course_id) {
-		System.err.println(course_id);
 		Course course = courseRepository.findByCourse_id(course_id);
 		for(CourseDTOG.GradeDTO grade : grades.grades) {
 			Student student = studentRepository.findByEmail(grade.student_email);
