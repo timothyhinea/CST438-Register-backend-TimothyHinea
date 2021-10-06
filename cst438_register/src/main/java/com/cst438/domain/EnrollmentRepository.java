@@ -15,6 +15,9 @@ public interface EnrollmentRepository extends CrudRepository <Enrollment, Intege
 	@Query("select e from Enrollment e where e.student.email=:email and e.year=:year and e.semester=:semester")
 	public List<Enrollment> findStudentSchedule(String email, int year, String semester);
 	
+	@Query("select e from Enrollment e where e.student.email=:email")
+	public List<Enrollment> findAllStudentEnrollments(String email);
+	
 	@Query("select e from Enrollment e where e.student.email=:email and e.course.course_id=:course_id")
 	Enrollment findByEmailAndCourseId(String email, int course_id);
 	
