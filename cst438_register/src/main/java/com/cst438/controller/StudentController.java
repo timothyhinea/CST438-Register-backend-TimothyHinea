@@ -5,9 +5,10 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,18 +18,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
-import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
-import com.cst438.domain.ScheduleDTO;
 import com.cst438.domain.Student;
 import com.cst438.domain.StudentRepository;
-import com.cst438.service.GradebookService;
+//import com.cst438.service.GradebookService;
 import com.cst438.domain.StudentDTO;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:3000", "https://cst438register-fe-hinea.herokuapp.com/"})
+@CrossOrigin(origins = {"http://localhost:3000"})
 public class StudentController {
 	
 	
@@ -41,15 +39,15 @@ public class StudentController {
 	@Autowired
 	EnrollmentRepository enrollmentRepository;
 	
-	@Autowired
-	GradebookService gradebookService;
+//	@Autowired
+//	GradebookService gradebookService;
 	
 	
 	/*
 	 * get student by email schedule for student.
 	 */
 	@GetMapping("/student")
-	public StudentDTO getStudent( @RequestParam("email") String email){
+	public StudentDTO getStudent( @RequestParam("email") String email, @AuthenticationPrincipal OAuth2User principal){
 		Student student = studentRepository.findByEmail(email);
 		System.out.print(student);
 		if (student != null) {
@@ -63,7 +61,8 @@ public class StudentController {
 	
 	@PostMapping("/student")
 	@Transactional
-	public StudentDTO addStudent( @RequestBody StudentDTO studentDTO  ) { 
+	public StudentDTO addStudent( @RequestBody StudentDTO studentDTO, @AuthenticationPrincipal OAuth2User principal) { 
+		System.out.println(studentDTO.email);
 		Student student = studentRepository.findByEmail(studentDTO.email);
 		if(student == null) {
 			student = new Student();
