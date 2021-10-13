@@ -50,9 +50,13 @@ public class ScheduleController {
 	 */
 	@GetMapping("/schedule")
 	public ScheduleDTO getSchedule( @RequestParam("year") int year, @RequestParam("semester") String semester, @AuthenticationPrincipal OAuth2User principal ) {
-		String student_email = principal.getAttribute("email");   // student's email 
+		String student_email = principal.getAttribute("email"); // student's email
+		Student student = null;
+		if(isStudent(student_email))
+			student = studentRepository.findByEmail(student_email);
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
 		
-		Student student = studentRepository.findByEmail(student_email);
 		if (student != null) {
 			List<Enrollment> enrollments = enrollmentRepository.findStudentSchedule(student_email, year, semester);
 			ScheduleDTO sched = createSchedule(year, semester, student, enrollments);
@@ -68,10 +72,14 @@ public class ScheduleController {
 	@Transactional
 	public ScheduleDTO.CourseDTO addCourse( @RequestBody ScheduleDTO.CourseDTO courseDTO ,@AuthenticationPrincipal OAuth2User principal ) { 
 		String student_email = principal.getAttribute("email");   // student's email 
-		
-		Student student = studentRepository.findByEmail(student_email);
-		Course course  = courseRepository.findByCourse_id(courseDTO.course_id);
-		System.err.println(student_email);		
+		Student student = null;
+		Course course = null;
+		if(isStudent(student_email)) {
+			student = studentRepository.findByEmail(student_email);
+			course  = courseRepository.findByCourse_id(courseDTO.course_id);
+		}
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
 		// student.status
 		// = 0  ok to register
 		// != 0 hold on registration.  student.status may have reason for hold.
@@ -101,11 +109,12 @@ public class ScheduleController {
 	public void dropCourse(  @PathVariable int enrollment_id, @AuthenticationPrincipal OAuth2User principal) {
 		
 		String student_email = principal.getAttribute("email");   // student's email 
-		
+		Enrollment enrollment = null;
 		// TODO  check that today's date is not past deadline to drop course.
-		
-		Enrollment enrollment = enrollmentRepository.findById(enrollment_id);
-		
+		if(isStudent(student_email))
+			enrollment = enrollmentRepository.findById(enrollment_id);
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
 		// verify that student is enrolled in the course.
 		if (enrollment!=null && enrollment.getStudent().getEmail().equals(student_email)) {
 			// OK.  drop the course.
@@ -152,6 +161,13 @@ public class ScheduleController {
 		courseDTO.title = c.getTitle();
 		courseDTO.grade = e.getCourseGrade();
 		return courseDTO;
+	}
+	
+	private boolean isStudent(String email) {
+		if(studentRepository.findByEmail(email) == null)
+			return false;
+		else
+			return true;
 	}
 	
 }

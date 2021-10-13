@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.cst438.domain.AdminRepository;
 import com.cst438.domain.CourseRepository;
 import com.cst438.domain.EnrollmentRepository;
 import com.cst438.domain.Student;
@@ -39,6 +40,9 @@ public class StudentController {
 	@Autowired
 	EnrollmentRepository enrollmentRepository;
 	
+	@Autowired
+	AdminRepository adminRepository;
+	
 //	@Autowired
 //	GradebookService gradebookService;
 	
@@ -48,8 +52,12 @@ public class StudentController {
 	 */
 	@GetMapping("/student")
 	public StudentDTO getStudent( @RequestParam("email") String email, @AuthenticationPrincipal OAuth2User principal){
-		Student student = studentRepository.findByEmail(email);
-		System.out.print(student);
+		Student student = null;
+		if(isAdmin(principal.getAttribute("email")))
+			student = studentRepository.findByEmail(email);
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
+		
 		if (student != null) {
 			StudentDTO sched = createStudentDTO(student);
 			return sched;
@@ -62,8 +70,11 @@ public class StudentController {
 	@PostMapping("/student")
 	@Transactional
 	public StudentDTO addStudent( @RequestBody StudentDTO studentDTO, @AuthenticationPrincipal OAuth2User principal) { 
-		System.out.println(studentDTO.email);
-		Student student = studentRepository.findByEmail(studentDTO.email);
+		Student student = null;
+		if(isAdmin(principal.getAttribute("email")))
+			student = studentRepository.findByEmail(studentDTO.email);
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
 		if(student == null) {
 			student = new Student();
 			student.setEmail(studentDTO.email);
@@ -77,29 +88,19 @@ public class StudentController {
 		
 	}
 	
-	@SuppressWarnings("unused")
 	@PutMapping("/student/{email}")
 	@Transactional
-	public StudentDTO addAndRemoveHold(  @PathVariable String email, @RequestParam("status_code") int status_code  ) { 
-		System.out.println(email + status_code);
-		
-		Student student = studentRepository.findByEmail(email);
-		student.setStatusCode(status_code);
-		
-		StudentDTO sDTO = createStudentDTO(student);
-		
-		if(student != null) {
-			if(status_code != 0){
-				System.out.println((status_code!= 0));
-				return sDTO;
-			}else{
-				Student result = new Student();
-				return sDTO;
-			}	
-		}else {
-			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST);
+	public StudentDTO addAndRemoveHold(  @PathVariable String email, @RequestParam("status_code") int status_code, @AuthenticationPrincipal OAuth2User principal  ) { 
+		Student student = null;
+		if(isAdmin(principal.getAttribute("email"))) {
+			student = studentRepository.findByEmail(email);
+			student.setStatusCode(status_code);
 		}
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
 		
+		return  createStudentDTO(student);
+
 	}
 	
 	
@@ -118,6 +119,12 @@ public class StudentController {
 		result.status = s.getStatus();
 		result.name = s.getName();
 		return result;
+	}
+	private boolean isAdmin(String email) {
+		if(adminRepository.findByEmail(email) == null)
+			return false;
+		else
+			return true;
 	}
 	
 }
