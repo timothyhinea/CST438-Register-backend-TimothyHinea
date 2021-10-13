@@ -54,6 +54,8 @@ public class ScheduleController {
 		Student student = null;
 		if(isStudent(student_email))
 			student = studentRepository.findByEmail(student_email);
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
 		
 		if (student != null) {
 			List<Enrollment> enrollments = enrollmentRepository.findStudentSchedule(student_email, year, semester);
@@ -76,6 +78,8 @@ public class ScheduleController {
 			student = studentRepository.findByEmail(student_email);
 			course  = courseRepository.findByCourse_id(courseDTO.course_id);
 		}
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
 		// student.status
 		// = 0  ok to register
 		// != 0 hold on registration.  student.status may have reason for hold.
@@ -109,7 +113,8 @@ public class ScheduleController {
 		// TODO  check that today's date is not past deadline to drop course.
 		if(isStudent(student_email))
 			enrollment = enrollmentRepository.findById(enrollment_id);
-		
+		else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid Permissions");
 		// verify that student is enrolled in the course.
 		if (enrollment!=null && enrollment.getStudent().getEmail().equals(student_email)) {
 			// OK.  drop the course.
